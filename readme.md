@@ -1,336 +1,375 @@
-# MediSight AI
+# MediSight AI: Multi-Agent Medical Imaging Research & Deployment Platform
 
-> Multi-Agent Medical Imaging Platform for chest X-ray analysis and diagnostic reporting.
+## Overview
 
-MediSight AI is an end-to-end AI agent system that chains multiple specialized agents — quality assessment, disease detection, explainability, clinical validation, model research, and deployment optimization — to produce comprehensive diagnostic reports from medical images.
+MediSight AI is a research-driven multi-agent healthcare AI platform designed to automate and optimize the complete medical imaging workflow, from image quality assessment to disease diagnosis, explainable AI, clinical validation, model benchmarking, and deployment optimization.
 
-## Working Flow
+Traditional medical AI systems focus solely on disease prediction. MediSight AI extends beyond prediction by introducing specialized AI agents that collaborate to evaluate image quality, diagnose diseases, explain model decisions, validate clinical performance, compare multiple deep learning architectures, and prepare models for deployment across cloud, on-premise, and edge environments.
 
-### End-to-End Data Pipeline
-
-```mermaid
-flowchart TD
-    U[User Uploads X-Ray] --> FE[Next.js Frontend]
-    FE --> API[FastAPI Backend]
-    API --> SS[(Supabase Storage)]
-    API --> QAA[Image Quality Assessment Agent]
-
-    QAA --> QD{Quality ≥ Threshold?}
-    QD -->|No| REJ[Reject Image<br/>Show Reason] --> U
-    QD -->|Yes| DDA[Disease Detection Agent]
-
-    DDA --> DL{Select Model}
-    DL --> EN[EfficientNet]
-    DL --> CN[ConvNeXt]
-    DL --> VT[Vision Transformer]
-    EN --> PRED[Prediction + Confidence]
-    CN --> PRED
-    VT --> PRED
-
-    PRED --> EA[Explainability Agent]
-    EA --> GRAD[Grad-CAM Heatmap]
-    EA --> SHAP[SHAP Analysis]
-    GRAD --> EXP_IMG[Explanation Image]
-    SHAP --> EXP_IMG
-
-    EXP_IMG --> CEA[Clinical Evidence Agent]
-    CEA --> METRICS[Accuracy, Precision,<br/>Recall, F1, ROC-AUC]
-    METRICS --> SUPABASE[(Supabase DB)]
-
-    CEA --> RA[Research Agent]
-    RA --> RUN_EXP{Run Experiments}
-    RUN_EXP --> EXP1[Experiment 1]
-    RUN_EXP --> EXP2[Experiment 2]
-    RUN_EXP --> EXP3[Experiment 3]
-    EXP1 --> COMPARE[Compare Models]
-    EXP2 --> COMPARE
-    EXP3 --> COMPARE
-    COMPARE --> PDF[best_model_report.pdf]
-
-    RA --> DOA[Deployment Optimization Agent]
-    DOA --> CONV{Convert Format}
-    CONV --> ONNX[ONNX]
-    CONV --> TRT[TensorRT]
-    CONV --> TSC[TorchScript]
-    ONNX --> BENCH[Benchmark<br/>Latency / Memory / Size]
-    TRT --> BENCH
-    TSC --> BENCH
-
-    BENCH --> REPORT[Final Doctor Report]
-    SUPABASE --> REPORT
-    PDF --> REPORT
-    EXP_IMG --> REPORT
-    PRED --> REPORT
-    REPORT --> FE
-```
-
-### What Makes This an "AI Agent" Project?
-
-Most pipelines stop at *Upload → Model → Prediction*. MediSight goes further:
-
-```mermaid
-flowchart LR
-    QA[Quality Agent] --> DA[Diagnosis Agent]
-    DA --> EX[Explainability Agent]
-    EX --> CV[Clinical Validation Agent]
-    CV --> RA[Research Agent]
-    RA --> OP[Optimization Agent]
-    OP --> DR[Doctor Report]
-```
-
-### Data Flow Summary
-
-| Step | Input | Processing | Output | Stored In |
-|------|-------|-----------|--------|-----------|
-| 1 | Raw X-Ray | Quality checks (blur, noise, etc.) | `{quality_score, status}` | Supabase Storage |
-| 2 | Passed X-Ray | EfficientNet / ViT / ConvNeXt | `{prediction, confidence}` | Supabase DB |
-| 3 | Prediction | Grad-CAM / SHAP | Heatmap overlay | Supabase Storage |
-| 4 | Prediction + Heatmap | Metrics computation | `{accuracy, recall, f1, roc_auc}` | Supabase DB |
-| 5 | Multiple model runs | Experiment comparison | `best_model_report.pdf` | Supabase Storage |
-| 6 | Trained model | ONNX / TensorRT export | Optimized model + benchmark | Supabase Storage |
+The platform serves as an end-to-end ecosystem for medical image analysis, AI research, model evaluation, and deployment optimization.
 
 ---
 
-## Detailed Flow
+## Problem Statement
 
-### Step 1: Upload Medical Image
+Medical imaging plays a critical role in healthcare diagnostics. However, AI models often face several challenges:
 
-User uploads a **Chest X-Ray**.
+* Poor-quality medical images can reduce diagnostic accuracy.
+* Black-box deep learning models lack explainability.
+* Clinical validation is often overlooked.
+* Comparing multiple architectures requires significant manual effort.
+* Deploying large models to production environments is complex.
+* Research experiments are difficult to track and reproduce.
 
-- **Example:** `patient_xray_001.jpg`
-- **Frontend:** Next.js
-- **Backend:** FastAPI
-- **Storage:** Supabase Storage
-
----
-
-### Step 2: Image Quality Assessment Agent
-
-**Goal:** Ensure image quality before diagnosis.
-
-**Checks:**
-- Blur
-- Noise
-- Brightness
-- Contrast
-- Resolution
-
-**Input:** `patient_xray.jpg`
-
-**Output (PASS):**
-```json
-{
-  "quality_score": 92,
-  "status": "PASS"
-}
-```
-
-**Output (FAIL):**
-```json
-{
-  "quality_score": 45,
-  "status": "FAIL",
-  "reason": "Image too blurry"
-}
-```
+MediSight AI addresses these challenges through a collaborative multi-agent architecture that automates the entire AI development and deployment lifecycle.
 
 ---
 
-### Step 3: Disease Detection Agent
+## Project Objectives
 
-**Goal:** Predict disease.
-
-**Models:**
-- EfficientNet
-- ConvNeXt
-- Vision Transformer (ViT)
-
-**Input:** X-Ray Image
-
-**Output:**
-```json
-{
-  "prediction": "Pneumonia",
-  "confidence": 96.4
-}
-```
+* Develop an intelligent medical imaging platform using multiple AI agents.
+* Improve diagnostic reliability through image quality assessment.
+* Provide interpretable AI predictions using explainability techniques.
+* Automate scientific evaluation of model performance.
+* Enable automated experimentation and architecture comparison.
+* Optimize trained models for deployment across multiple environments.
+* Demonstrate practical applications of AI in healthcare.
 
 ---
 
-### Step 4: Explainability Agent
+## Supported Medical Imaging Tasks
 
-**Goal:** Show why AI predicted Pneumonia.
+### Phase 1
 
-**Techniques:**
-- Grad-CAM
-- SHAP
+* Pneumonia Detection from Chest X-Ray Images
 
-**Creates:** Heatmap Overlay (Red Area → Infected Lung Region)
+### Phase 2
 
-**Output:**
-```json
-{
-  "explanation_image": "heatmap.png"
-}
-```
+* Brain Tumor Classification from MRI Images
 
----
+### Future Expansion
 
-### Step 5: Clinical Evidence Agent
-
-**Goal:** Evaluate model scientifically.
-
-**Metrics:**
-- Accuracy
-- Precision
-- Recall
-- F1 Score
-- Sensitivity
-- Specificity
-- ROC-AUC
-
-**Output:**
-```json
-{
-  "accuracy": 95.1,
-  "recall": 94.8,
-  "f1": 94.5,
-  "roc_auc": 0.98
-}
-```
-
-**Store results in:** Supabase
+* Tuberculosis Detection
+* Diabetic Retinopathy Detection
+* Multi-Disease Medical Imaging Analysis
 
 ---
 
-### Step 6: Research Agent
+# System Architecture
 
-**Goal:** Automatically compare multiple models.
+Patient Image Upload
 
-**Runs:**
-- ResNet50
-- EfficientNet
-- ConvNeXt
-- ViT
+↓
 
-**Stores:**
-- Experiment 1
-- Experiment 2
-- Experiment 3
+Image Quality Assessment Agent
 
-**Example Comparison:**
+↓
 
-| Model | Accuracy |
-|-------|----------|
-| ResNet50 | 91.2% |
-| EfficientNet | 94.5% |
-| ConvNeXt | 95.1% |
-| ViT | 94.8% |
+Disease Detection Agent
 
-Research Agent automatically generates `best_model_report.pdf`.
+↓
 
----
+Explainability Agent
 
-### Step 7: Deployment Optimization Agent
+↓
 
-**Goal:** Prepare model for production.
+Clinical Evidence Agent
 
-**Conversion Pipeline:**
-```
-PyTorch → ONNX → TensorRT → TorchScript
-```
+↓
 
-**Measures:**
-- Inference Time
-- Memory Usage
-- Model Size
-- CPU Performance
-- GPU Performance
+Research Agent
 
-**Benchmark Output:**
+↓
 
-| Format | Latency |
-|--------|---------|
-| PyTorch | 120ms |
-| ONNX | 55ms |
-| TensorRT | 20ms |
+Deployment Optimization Agent
+
+↓
+
+Final Diagnostic Report
 
 ---
 
-## Database Design (Supabase)
+## Agent 1: Image Quality Assessment Agent
 
-### Users
-| Column | Type |
-|--------|------|
-| id | UUID |
-| name | Text |
-| email | Text |
-| role | Text |
+### Purpose
 
-### Experiments
-| Column | Type |
-|--------|------|
-| id | UUID |
-| model_name | Text |
-| accuracy | Float |
-| precision | Float |
-| recall | Float |
-| created_at | Timestamp |
+Evaluate the quality of uploaded medical images before diagnosis.
 
-### Predictions
-| Column | Type |
-|--------|------|
-| id | UUID |
-| patient_image | Text |
-| prediction | Text |
-| confidence | Float |
-| timestamp | Timestamp |
+### Responsibilities
 
-### Reports
-| Column | Type |
-|--------|------|
-| id | UUID |
-| report_url | Text |
-| model_name | Text |
-| generated_at | Timestamp |
+* Blur Detection
+* Noise Detection
+* Brightness Analysis
+* Contrast Analysis
+* Resolution Validation
+
+### Output
+
+* Quality Score
+* Pass/Fail Decision
+* Quality Report
+
+### Benefit
+
+Prevents poor-quality images from affecting diagnostic performance.
 
 ---
 
-## Final Dashboard Pages
+## Agent 2: Disease Detection Agent
 
-| Page | Features |
-|------|----------|
-| **Dashboard** | Total Predictions, Best Model, Accuracy, Experiments |
-| **Upload Scan** | Upload X-Ray, Run Diagnosis |
-| **Research Lab** | Compare Models, View Metrics, Download Reports |
-| **Deployment Center** | Export ONNX, Export TensorRT, Benchmark Results |
+### Purpose
+
+Analyze medical images and predict diseases using state-of-the-art deep learning models.
+
+### Models
+
+* EfficientNet
+* ConvNeXt
+* Vision Transformer (ViT)
+* ResNet50
+
+### Responsibilities
+
+* Image Classification
+* Confidence Estimation
+* Disease Prediction
+
+### Output
+
+Disease Class
+
+Prediction Confidence
+
+Risk Assessment
 
 ---
 
-## Tech Stack
+## Agent 3: Explainability Agent
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Next.js |
-| Backend | FastAPI |
-| Database / Storage | Supabase (PostgreSQL + Object Storage) |
-| AI / ML | PyTorch, ONNX, TensorRT |
-| Explainability | Grad-CAM, SHAP |
+### Purpose
+
+Provide transparency into model decisions.
+
+### Technologies
+
+* Grad-CAM
+* SHAP
+
+### Responsibilities
+
+* Generate Attention Heatmaps
+* Highlight Important Regions
+* Visualize Decision-Making Process
+
+### Output
+
+* Heatmap Visualization
+* Explainability Report
+
+### Benefit
+
+Builds trust and improves clinical interpretability.
 
 ---
 
-## Getting Started
+## Agent 4: Clinical Evidence Agent
 
-*Coming soon — the project is in its initial planning phase.*
+### Purpose
 
-## Project Status
+Evaluate the scientific performance of trained models.
 
-Currently in the **planning and design phase**. Architecture decisions have been documented and implementation will follow.
+### Metrics
 
-## Author
+* Accuracy
+* Precision
+* Recall
+* F1 Score
+* ROC-AUC
+* Sensitivity
+* Specificity
 
-- **Tisha Choksi** — [tishachoksi18@gmail.com](mailto:tishachoksi18@gmail.com)
+### Responsibilities
 
-## License
+* Statistical Evaluation
+* Error Analysis
+* Validation Reporting
 
-This project is licensed under the MIT License.
+### Output
+
+Clinical Performance Report
+
+### Benefit
+
+Provides evidence-based model validation.
+
+---
+
+## Agent 5: Research Agent
+
+### Purpose
+
+Automate model experimentation and benchmarking.
+
+### Responsibilities
+
+* Train Multiple Architectures
+* Compare Results
+* Track Experiments
+* Generate Research Reports
+
+### Models Compared
+
+* ResNet50
+* EfficientNet
+* ConvNeXt
+* Vision Transformer
+
+### Output
+
+Model Leaderboard
+
+Research Report
+
+Best Model Recommendation
+
+### Benefit
+
+Accelerates AI research and model selection.
+
+---
+
+## Agent 6: Deployment Optimization Agent
+
+### Purpose
+
+Prepare trained models for real-world deployment.
+
+### Responsibilities
+
+* ONNX Conversion
+* TorchScript Conversion
+* TensorRT Optimization
+* Latency Benchmarking
+* Memory Benchmarking
+
+### Output
+
+Deployment Report
+
+Performance Benchmarks
+
+Optimized Model Artifacts
+
+### Benefit
+
+Ensures efficient deployment on cloud, on-premise, and edge devices.
+
+---
+
+# Datasets
+
+## Primary Dataset
+
+Chest X-Ray Pneumonia Dataset
+
+Classes:
+
+* Normal
+* Pneumonia
+
+Images:
+Approximately 5,800 medical images.
+
+## Secondary Dataset
+
+Brain MRI Dataset
+
+Classes:
+
+* Glioma
+* Meningioma
+* Pituitary Tumor
+* No Tumor
+
+---
+
+# Technology Stack
+
+## Artificial Intelligence
+
+* Python
+* PyTorch
+* OpenCV
+* MONAI
+* Albumentations
+* Grad-CAM
+* SHAP
+
+## Backend
+
+* FastAPI
+
+## Frontend
+
+* Next.js
+
+## Database
+
+* PostgreSQL
+* Supabase
+
+## Experiment Tracking
+
+* MLflow
+
+## Deployment
+
+* Docker
+* ONNX
+* TensorRT
+* TorchScript
+
+---
+
+# Key Features
+
+* Multi-Agent Healthcare AI Architecture
+* Medical Image Quality Assessment
+* Disease Detection Using Deep Learning
+* Explainable AI Visualizations
+* Clinical Performance Validation
+* Automated Research Workflows
+* Experiment Tracking
+* Model Benchmarking
+* Deployment Optimization
+* Interactive Dashboard
+* Research Report Generation
+
+---
+
+# Expected Outcomes
+
+* Accurate disease classification system.
+* Transparent and explainable AI predictions.
+* Automated model comparison framework.
+* Clinically validated performance metrics.
+* Optimized deployment-ready AI models.
+* Research-grade healthcare AI platform.
+
+---
+
+# Future Enhancements
+
+* Multi-modal Healthcare AI
+* Electronic Health Record Integration
+* Federated Learning
+* Active Learning Pipelines
+* AI-Assisted Clinical Decision Support
+* Real-Time Hospital Deployment
+* Multi-Agent Medical Research Assistant
+
+---
+
+# Impact
+
+MediSight AI demonstrates the intersection of Healthcare AI, Computer Vision, Deep Learning, Explainable AI, Scientific Research, and Model Deployment. The platform showcases how specialized AI agents can collaborate to create reliable, transparent, and deployment-ready healthcare solutions while maintaining scientific rigor and clinical relevance.

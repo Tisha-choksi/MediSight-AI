@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+.next/
+out/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+data/chest_xray/*
+data/brain_mri/*
+!data/chest_xray/.gitkeep
+!data/brain_mri/.gitkeep
+
+# Models
+*.pth
+*.pt
+*.onnx
+*.engine
+*.ts
+
+# Logs
+logs/
+*.log
+
+# Reports
+*.pdf
+
+# Docker
+docker-compose.override.yml
+
+# MLflow
+mlruns/
